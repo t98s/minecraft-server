@@ -1,4 +1,4 @@
-resource "random_string" "t98s-gcf-starter" {
+resource "random_password" "t98s-gcf-starter" {
   length  = 8
   special = false
   upper   = false
@@ -6,7 +6,7 @@ resource "random_string" "t98s-gcf-starter" {
 
 resource "google_storage_bucket" "t98s-gcf-src" {
   provider                    = google-beta
-  name                        = "t98s-gcf-src-${random_string.t98s-gcf-starter.result}"
+  name                        = "t98s-gcf-src-${random_password.t98s-gcf-starter.result}"
   location                    = local.region
   uniform_bucket_level_access = true
 }
@@ -30,6 +30,7 @@ resource "google_cloudfunctions_function" "minecraft-starter-http" {
   runtime             = "nodejs16"
   available_memory_mb = 256 # 128 だと落ちることがある
   trigger_http        = true
+  timeout             = 30
   ingress_settings    = "ALLOW_ALL"
   entry_point         = "interaction"
   environment_variables = {
@@ -53,6 +54,7 @@ resource "google_cloudfunctions_function" "minecraft-starter-pubsub" {
 
   runtime             = "nodejs16"
   available_memory_mb = 256 # 128 だと落ちることがある
+  timeout             = 300
   event_trigger {
     event_type = "google.pubsub.topic.publish"
     resource   = google_pubsub_topic.gcf-minecraft-starter.id

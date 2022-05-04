@@ -9,7 +9,7 @@ const { verifyKey, InteractionType, InteractionResponseType } = require('discord
 const compute = require('@google-cloud/compute')
 const axios = require('axios').default
 const util = require('util')
-const { PubSub } = require('@google-cloud/pubsub')
+const pubsub = require('@google-cloud/pubsub')
 
 const parseEnv = () => z.object({
     DISCORD_APPLICATION_ID: z.string(),
@@ -23,20 +23,7 @@ const parseEnv = () => z.object({
 
 const env = parseEnv()
 const rest = new REST({ version: '9' }).setToken(env.DISCORD_APIKEY)
-const pubsub = new PubSub()
-const topic = pubsub.topic(env.GCF_INVOKER_TOPIC)
-
-/**
- * @param {functions.Request} req 
- */
-const verifyRequest = (req) => {
-    return verifyKey(
-        req.rawBody,
-        req.get('X-Signature-Ed25519'),
-        req.get('X-Signature-Timestamp'),
-        env.DISCORD_PUBLIC_KEY
-    )
-}
+const topic = (new pubsub.PubSub()).topic(env.GCF_INVOKER_TOPIC)
 
 async function init() {
     console.log('start refreshing slash commands')
@@ -74,10 +61,14 @@ const catchPromiseError = f =>
         }
     }
 
-const log = (obj, serverity = "DEBUG") => {
+/**
+ * @param {string|object} message
+ * @param {"DEBUG"|"ERROR"} serverity
+ */
+const log = (message, serverity = "DEBUG") => {
     console.log(JSON.stringify({
         serverity,
-        message: typeof obj === "string" ? obj : util.inspect(obj),
+        message: typeof message === "string" ? message : util.inspect(message),
     }))
 }
 
@@ -85,7 +76,13 @@ functions.http('interaction', catchPromiseError(async (req, res) => {
     if (req.method !== "POST") {
         return res.status(405).end('method not allowed')
     }
-    if (!verifyRequest(req)) {
+
+    if (!verifyKey(
+        req.rawBody,
+        req.get('X-Signature-Ed25519'),
+        req.get('X-Signature-Timestamp'),
+        env.DISCORD_PUBLIC_KEY
+    )) {
         return res.status(401).end('invalid request signature')
     }
     log('verify successful')
@@ -122,6 +119,9 @@ functions.http('interaction', catchPromiseError(async (req, res) => {
     }
 }))
 
+/**
+ * @param {Omit<pubsub.protos.google.pubsub.v1.PubsubMessage, 'publishTime' | 'messageId'> & { data: string }} message
+ */
 exports.startInstance = async (message) => {
     const { webhookUrl } = JSON.parse(Buffer.from(message.data, 'base64').toString())
     const sendFollowUpMessage = (msg) => {
@@ -148,7 +148,6 @@ exports.startInstance = async (message) => {
         log("starting instance")
         const [response] = await instancesClient.start(targetInstance)
         let operation = response.latestResponse
-        // 最大2分待つらしい。Cloud Functions のタイムアウトに引っかかりそうではある
         const [waited_operation] = await operationsClient.wait({
             operation: operation.name,
             project: env.GCE_PROJECT_ID,
