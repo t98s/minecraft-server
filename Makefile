@@ -5,4 +5,4 @@ force-apply: archive
 
 gcf-minecraft-starter.zip: gcf-minecraft-starter/package.json
 	rm -f gcf-minecraft-starter.zip
-	cd gcf-minecraft-starter && zip -r ../gcf-minecraft-starter.zip . -x 'node_modules/*'
+	cd gcf-minecraft-starter && npm run archive

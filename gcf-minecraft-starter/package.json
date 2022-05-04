@@ -1,9 +1,14 @@
 {
   "name": "gcf-minecraft-starter",
   "version": "1.20.0",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "build": "tsc",
+    "archive": "zip -r ./dist/gcf-minecraft-starter.zip . -x 'src/*' -x 'node_modules/*'",
+    "prearchive": "npm run build"
+  },
   "dependencies": {
     "@discordjs/builders": "^0.13.0",
     "@discordjs/rest": "^0.4.1",
