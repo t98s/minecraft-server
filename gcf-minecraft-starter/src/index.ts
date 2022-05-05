@@ -1,8 +1,8 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { REST } from '@discordjs/rest'
-import compute from '@google-cloud/compute'
-import functions from '@google-cloud/functions-framework'
-import pubsub from '@google-cloud/pubsub'
+import * as compute from '@google-cloud/compute'
+import * as functions from '@google-cloud/functions-framework'
+import * as pubsub from '@google-cloud/pubsub'
 import axios from 'axios'
 import { Routes } from 'discord-api-types/v9'
 import {
