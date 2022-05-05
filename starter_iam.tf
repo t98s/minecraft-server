@@ -17,11 +17,11 @@ resource "google_project_iam_custom_role" "instanceLister" {
 }
 
 resource "google_compute_instance_iam_member" "instanceStarter" {
-  project = local.project
-  zone = local.zone
+  project       = local.project
+  zone          = local.zone
   instance_name = google_compute_instance.minecraft.name
-  role = google_project_iam_custom_role.instanceStarter.id
-  member = "group:${local.minecraft_starter_gqp}"
+  role          = google_project_iam_custom_role.instanceStarter.id
+  member        = "group:${local.minecraft_starter_gqp}"
 }
 
 resource "google_project_iam_member" "instanceLister" {

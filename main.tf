@@ -4,7 +4,7 @@ terraform {
   }
   required_providers {
     google = {
-      source = "hashicorp/google"
+      source  = "hashicorp/google"
       version = "4.19.0"
     }
   }
@@ -22,10 +22,10 @@ provider "google" {
 }
 
 resource "google_compute_instance" "minecraft" {
-  name         = "minecraft-instance"
-  machine_type = "n1-standard-1"
-  zone         = local.zone
-  tags         = ["minecraft"]
+  name                    = "minecraft-instance"
+  machine_type            = "n1-standard-1"
+  zone                    = local.zone
+  tags                    = ["minecraft"]
   metadata_startup_script = "docker run -d --rm -p 42865:25565 -e EULA=TRUE -e VERSION=1.18.2 -e MEMORY=2G -e OPS=rinsuki,takanakahiko -v /var/minecraft:/data itzg/minecraft-server:latest;"
   metadata = {
     enable-oslogin = "TRUE"
@@ -79,5 +79,5 @@ resource "google_compute_firewall" "minecraft" {
     ports    = ["42865"] # <- otaku
   }
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["minecraft"] 
+  target_tags   = ["minecraft"]
 }

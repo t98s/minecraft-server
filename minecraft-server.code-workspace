@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "gcf-minecraft-starter"
+		},
+		{
+			"name": "root",
+			"path": "."
+		}
+  ],
+  "settings": {}
+}
