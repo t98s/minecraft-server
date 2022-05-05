@@ -12,9 +12,9 @@ resource "google_storage_bucket" "t98s-gcf-src" {
 }
 
 resource "google_storage_bucket_object" "gcf-minecraft-starter_zip" {
-  name   = "gcf-minecraft-starter_${filemd5("gcf-minecraft-starter.zip")}.zip"
+  name   = "gcf-minecraft-starter_${filemd5("gcf-minecraft-starter/dist/gcf-minecraft-starter.zip")}.zip"
   bucket = google_storage_bucket.t98s-gcf-src.name
-  source = "gcf-minecraft-starter.zip"
+  source = "gcf-minecraft-starter/dist/gcf-minecraft-starter.zip"
 }
 
 resource "google_pubsub_topic" "gcf-minecraft-starter" {
