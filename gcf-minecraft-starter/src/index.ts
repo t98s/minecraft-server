@@ -34,81 +34,76 @@ init().catch(e => {
     process.exit(1)
 })
 
-const catchPromiseError = (f: (req: functions.Request, res: functions.Response) => Promise<unknown>) =>
-    async (req: functions.Request, res: functions.Response) => {
-        try {
-            await f(req, res)
-        } catch (e) {
-            logger.error(e)
-            if (!res.headersSent) {
-                res.status(500).send('internal error')
+functions.http('interaction', async (req, res) => {
+    try {
+        if (req.method !== 'POST') {
+            return res.status(405).end('method not allowed')
+        }
+
+        if (!req.rawBody) {
+            return res.status(422).end('body is empty')
+        }
+
+        const signature = req.get('X-Signature-Ed25519')
+        const signatureTimestamp = req.get('X-Signature-Timestamp')
+
+        if (!signature || !signatureTimestamp) {
+            return res.status(401).end('invalid signature')
+        }
+
+        if (!verifyKey(
+            req.rawBody,
+            signature,
+            signatureTimestamp,
+            env.DISCORD_PUBLIC_KEY,
+        )) {
+            return res.status(401).end('invalid request signature')
+        }
+        logger.info('verify successful')
+        logger.info(JSON.stringify(req.body, null, 4))
+
+        switch (req.body.type) {
+        case InteractionType.PING:
+            logger.info('ping')
+
+            return res.send({
+                type: InteractionResponseType.PONG,
+            })
+        case InteractionType.APPLICATION_COMMAND:
+            switch (req.body.data.name) {
+            case 'startmc': {
+                logger.info('startmc')
+
+                // Cloud Functions はレスポンスを返した時点でそのあとの処理が実行される保証がなくなる
+                // そのため別の関数に移譲する
+                await topic.publishMessage({
+                    json: {
+                        webhookUrl: `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${req.body.token}`,
+                    },
+                })
+                res.send({
+                    type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+                })
+
+                return
             }
-        }
-    }
+            default:
+                logger.info('unknown command received')
 
-functions.http('interaction', catchPromiseError(async (req, res) => {
-    if (req.method !== 'POST') {
-        return res.status(405).end('method not allowed')
-    }
-
-    if (!req.rawBody) {
-        return res.status(422).end('body is empty')
-    }
-
-    const signature = req.get('X-Signature-Ed25519')
-    const signatureTimestamp = req.get('X-Signature-Timestamp')
-
-    if (!signature || !signatureTimestamp) {
-        return res.status(401).end('invalid signature')
-    }
-
-    if (!verifyKey(
-        req.rawBody,
-        signature,
-        signatureTimestamp,
-        env.DISCORD_PUBLIC_KEY,
-    )) {
-        return res.status(401).end('invalid request signature')
-    }
-    logger.info('verify successful')
-    logger.info(JSON.stringify(req.body, null, 4))
-
-    switch (req.body.type) {
-    case InteractionType.PING:
-        logger.info('ping')
-
-        return res.send({
-            type: InteractionResponseType.PONG,
-        })
-    case InteractionType.APPLICATION_COMMAND:
-        switch (req.body.data.name) {
-        case 'startmc': {
-            logger.info('startmc')
-
-            // Cloud Functions はレスポンスを返した時点でそのあとの処理が実行される保証がなくなる
-            // そのため別の関数に移譲する
-            await topic.publishMessage({
-                json: {
-                    webhookUrl: `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${req.body.token}`,
-                },
-            })
-            res.send({
-                type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
-            })
-
-            return
-        }
+                return res.status(500).end('unknown command received')
+            }
         default:
-            logger.info('unknown command received')
+            logger.info('unknown request received')
 
-            return res.status(500).end('unknown command received')
+            return res.status(500).end('unknown request received')
         }
-    default:
-        logger.info('unknown request received')
-
-        return res.status(500).end('unknown request received')
+    } catch (e) {
+        logger.error(e)
+        if (!res.headersSent) {
+            res.status(500).send('internal error')
+        }
     }
-}))
+})
 
 type StartInstanceInit = Omit<pubsub.protos.google.pubsub.v1.PubsubMessage, 'publishTime' | 'messageId'> & { data: string }
 
