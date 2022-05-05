@@ -9,6 +9,7 @@ resource "google_storage_bucket" "t98s-gcf-src" {
   name                        = "t98s-gcf-src-${random_password.t98s-gcf-starter.result}"
   location                    = local.region
   uniform_bucket_level_access = true
+  project                     = local.project
 }
 
 resource "google_storage_bucket_object" "gcf-minecraft-starter_zip" {
