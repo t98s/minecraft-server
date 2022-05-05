@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc",
     "archive": "zip -r ./dist/gcf-minecraft-starter.zip . -x 'src/*' -x 'node_modules/*'",
-    "prearchive": "npm run build"
+    "prearchive": "npm run build",
+    "fmt": "prettier --write './**/*.ts'"
   },
   "dependencies": {
     "@discordjs/builders": "^0.13.0",
@@ -21,9 +22,16 @@
     "zod": "^3.14.4"
   },
   "devDependencies": {
+    "prettier": "^2.6.2",
     "typescript": "^4.6.4"
   },
   "engines": {
     "node": "16"
+  },
+  "prettier": {
+    "arrowParens": "avoid",
+    "singleQuote": true,
+    "trailingComma": "es5",
+    "semi": false
   }
 }

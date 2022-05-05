@@ -12,6 +12,6 @@ const envSchema = z.object({
 
 type AppEnv = z.infer<typeof envSchema>
 
-export function parseEnv (env: NodeJS.ProcessEnv): AppEnv {
+export function parseEnv(env: NodeJS.ProcessEnv): AppEnv {
     return envSchema.parse(env)
 }
