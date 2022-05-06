@@ -93,7 +93,7 @@ resource "google_pubsub_topic_iam_member" "minecraft-starter-http_pubsub_publish
 resource "google_compute_instance_iam_member" "minecraft-starter-pubsub_instanceStarter" {
   project       = local.project
   zone          = local.zone
-  instance_name = google_compute_instance.minecraft.name
+  instance_name = google_compute_instance.minecraft.instance_id # インスタンス再生成事に無効化されてしまうのでこのようにインスタンスに依存させる必要がある
   role          = google_project_iam_custom_role.instanceStarter.id
   member        = "serviceAccount:${google_service_account.minecraft-starter-pubsub.email}"
 }

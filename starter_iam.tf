@@ -19,7 +19,7 @@ resource "google_project_iam_custom_role" "instanceLister" {
 resource "google_compute_instance_iam_member" "instanceStarter" {
   project       = local.project
   zone          = local.zone
-  instance_name = google_compute_instance.minecraft.name
+  instance_name = google_compute_instance.minecraft.instance_id # インスタンス再生成事に無効化されてしまうのでこのようにインスタンスに依存させる必要がある
   role          = google_project_iam_custom_role.instanceStarter.id
   member        = "group:${local.minecraft_starter_gqp}"
 }
