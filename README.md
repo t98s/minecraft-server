@@ -15,8 +15,7 @@
 <h3 align="center">Special Sponsor(インフラ費用)</h3>
 <p align="center">
   <a href="https://github.com/uneco" target="_blank">
-    <img width="64px"  src="https://github.com/uneco.png">
-    <span>uneco</span>
+    <img width="128px"  src="https://github.com/uneco.png">
   </a>
 </p>
 
