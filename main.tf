@@ -5,7 +5,11 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "4.19.0"
+      version = "4.20.0"
+    }
+    google-beta = {
+      source  = "hashicorp/google-beta"
+      version = "4.20.0"
     }
   }
 }
@@ -21,6 +25,11 @@ provider "google" {
   region  = local.region
 }
 
+provider "google-beta" {
+  project = local.project
+  region  = local.region
+}
+
 resource "google_compute_instance" "minecraft" {
   name                    = "minecraft-instance"
   machine_type            = "n1-standard-2"
@@ -28,7 +37,7 @@ resource "google_compute_instance" "minecraft" {
   tags                    = ["minecraft"]
   metadata_startup_script = "docker run -d --rm --name mcserver -p 42865:25565 -e EULA=TRUE -e VERSION=1.18.2 -e MEMORY=4G -e OPS=rinsuki,takanakahiko -v /var/minecraft:/data itzg/minecraft-server:latest;"
   metadata = {
-    enable-oslogin = "TRUE"
+    enable-oslogin  = "TRUE"
     shutdown-script = "docker exec mcserver rcon-cli stop"
   }
   boot_disk {

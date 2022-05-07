@@ -12,3 +12,8 @@ variable "discord_application_id" {
   type      = string
   sensitive = true
 }
+
+variable "github_repository" {
+  type    = string
+  default = "t98s/minecraft-server"
+}
