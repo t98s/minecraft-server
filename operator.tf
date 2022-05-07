@@ -17,6 +17,7 @@ resource "google_compute_instance_iam_member" "starter_instanceStandardUser" {
   /* 具体的なリソースに紐付けられている IAM policy であることに注意
      google_compute_instance.name を渡すと、同名のまま作り直されたときに効果を失うことになる */
   instance_name = google_compute_instance.minecraft.instance_id
-  role          = "roles/compute.osLogin"
+  for_each      = ["roles/compute.osLogin", "roles/iap.tunnelResourceAccessor"]
+  role          = each.key
   member        = "group:${local.minecraft_starter_gqp}"
 }
