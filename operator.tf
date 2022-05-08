@@ -11,13 +11,9 @@ resource "google_compute_firewall" "iap" {
   target_tags   = ["minecraft"]
 }
 
-resource "google_compute_instance_iam_member" "starter_instanceStandardUser" {
-  project = local.project
-  zone    = local.zone
-  /* 具体的なリソースに紐付けられている IAM policy であることに注意
-     google_compute_instance.name を渡すと、同名のまま作り直されたときに効果を失うことになる */
-  instance_name = google_compute_instance.minecraft.instance_id
-  for_each      = ["roles/compute.osLogin", "roles/iap.tunnelResourceAccessor"]
-  role          = each.key
-  member        = "group:${local.minecraft_starter_gqp}"
+resource "google_project_iam_member" "starter_instanceStandardUser" {
+  project  = local.project
+  for_each = toset(["roles/compute.osLogin", "roles/iap.tunnelResourceAccessor"])
+  role     = each.key
+  member   = "group:${local.minecraft_starter_gqp}"
 }
