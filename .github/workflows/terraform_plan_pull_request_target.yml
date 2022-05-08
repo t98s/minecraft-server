@@ -13,6 +13,8 @@ permissions:
 jobs:
   archive:
     uses: ./.github/workflows/archive.yml
+    with:
+      ref: "refs/pull/${{ github.event.number }}/merge"
   plan:
     needs: archive
     uses: ./.github/workflows/terraform.yml
