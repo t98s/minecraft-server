@@ -1,0 +1,28 @@
+name: terraform plan
+on:
+  pull_request_target:
+    # fork でも origin の context で実行されるようにする
+    # 当然 unsafe であるので、権限を持つ人が review_request を行なったときに自動で走るという整理にする
+    # https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+    types: [review_requested]
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+jobs:
+  archive:
+    uses: ./.github/workflows/archive.yml
+  plan:
+    needs: archive
+    uses: ./.github/workflows/terraform.yml
+    with:
+      command: plan
+      ref: "refs/pull/${{ github.event.number }}/merge"
+      tfcmt: true
+    secrets:
+      GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT }}
+      GCLOUD_PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
+      DISCORD_API_KEY: ${{ secrets.DISCORD_API_KEY }}
+      DISCORD_PUBLIC_KEY: ${{ secrets.DISCORD_PUBLIC_KEY }}
+      DISCORD_APPLICATION_ID: ${{ secrets.DISCORD_APPLICATION_ID }}
