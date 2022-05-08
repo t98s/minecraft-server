@@ -2,20 +2,35 @@ name: terraform plan
 on:
   pull_request_target:
     # fork でも origin の context で実行されるようにする
-    # 当然 unsafe であるので、権限を持つ人が review_request を行なったときに自動で走るという整理にする
+    # 当然 unsafe であるので、自動で走るのではなく write 権限が必要な操作を要求する整理にする
     # https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
-    types: [review_requested]
+    types: [labeled]
 
 permissions:
   contents: read
   id-token: write
   pull-requests: write
 jobs:
+  remove_label:
+    if: ${{ github.event.label.name == 'terraform plan' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.issues.removeLabel({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'terraform plan'
+            })
   archive:
+    if: ${{ github.event.label.name == 'terraform plan' }}
     uses: ./.github/workflows/archive.yml
     with:
       ref: "refs/pull/${{ github.event.number }}/merge"
   plan:
+    if: ${{ github.event.label.name == 'terraform plan' }}
     needs: archive
     uses: ./.github/workflows/terraform.yml
     with:
