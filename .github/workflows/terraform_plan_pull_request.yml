@@ -8,12 +8,12 @@ permissions:
   pull-requests: write
 jobs:
   archive:
+    # リポジトリ内ならいつでも走らせる
+    # フォークでは context が異なり動かない。pull_request_target で代用する
+    if: github.event.pull_request.head.repo.id == github.event.pull_request.base.repo.id
     uses: ./.github/workflows/archive.yml
   plan:
     needs: archive
-    # リポジトリ内ならいつでも走らせる
-    # フォークでは context が異なり動かない。pull_request_target で代用する
-    if: ${{ github.event.head.repo.id == github.event.base.repo.id }}
     uses: ./.github/workflows/terraform.yml
     with:
       command: plan
