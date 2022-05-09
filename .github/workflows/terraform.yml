@@ -1,0 +1,74 @@
+on:
+  workflow_call:
+    inputs:
+      command:
+        required: true
+        type: string
+      ref:
+        type: string
+      tfcmt:
+        type: boolean
+    secrets:
+      GCLOUD_PROJECT:
+        required: true
+      GCLOUD_PROJECT_ID:
+        required: true
+      DISCORD_API_KEY:
+        required: true
+      DISCORD_PUBLIC_KEY:
+        required: true
+      DISCORD_APPLICATION_ID:
+        required: true
+
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          # 実装を見ると空でデフォルト値を参照できることがわかる
+          # https://github.com/actions/checkout/blob/2541b1294d2704b0964813337f33b291d3f8596b/src/input-helper.ts#L59-L76
+          ref: ${{ inputs.ref }}
+      - uses: hashicorp/setup-terraform@v2
+      - name: Setup github-comment & tfcmt
+        run: |
+          cd $(mktemp -d)
+          wget https://github.com/suzuki-shunsuke/tfcmt/releases/download/v3.2.2-0/tfcmt_linux_amd64.tar.gz
+          tar -vxf tfcmt_linux_amd64.tar.gz tfcmt
+          wget https://github.com/suzuki-shunsuke/github-comment/releases/download/v4.1.1/github-comment_4.1.1_linux_amd64.tar.gz
+          tar -vxf ./github-comment_4.1.1_linux_amd64.tar.gz github-comment
+          sudo mv tfcmt github-comment /usr/bin
+      - name: Calculate hash of gcf-minecraft-starter
+        run: |
+          echo -n "TF_VAR_gcf_minecraft_starter_zip_filepath=" >> $GITHUB_ENV
+          ./.github/calculate-archive-name.sh >> $GITHUB_ENV
+      - uses: actions/download-artifact@v3
+        with:
+          name: gcf-archive
+      - name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v0.7.1"
+        with:
+          workload_identity_provider: "projects/${{ secrets.GCLOUD_PROJECT_ID }}/locations/global/workloadIdentityPools/cicd/providers/github-actions"
+          service_account: "github-actions-${{ inputs.command }}@${{ secrets.GCLOUD_PROJECT }}.iam.gserviceaccount.com"
+          export_environment_variables: true
+      - name: terraform init
+        run: terraform init -input=false
+      - name: terraform ${{ inputs.command }}
+        run: |
+          args=""
+          if [ "${{ inputs.command }}" == "apply" ]; then
+            args="-auto-approve"
+          fi
+          if [ "${{ inputs.tfcmt }}" == "true" ]; then
+            github-comment hide
+            tfcmt ${{ inputs.command }} -- terraform ${{ inputs.command }} -input=false $args
+          else
+            terraform ${{ inputs.command }} -input=false $args
+          fi
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TF_VAR_discord_apikey: ${{ secrets.DISCORD_API_KEY }}
+          TF_VAR_discord_public_key: ${{ secrets.DISCORD_PUBLIC_KEY }}
+          TF_VAR_discord_application_id: ${{ secrets.DISCORD_APPLICATION_ID }}
+          TF_VAR_github_repository: ${{ github.repository }}

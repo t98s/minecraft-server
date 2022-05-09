@@ -1,0 +1,21 @@
+name: terraform apply
+on:
+  push:
+    branches: ["main"]
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  archive:
+    uses: ./.github/workflows/archive.yml
+  apply:
+    needs: archive
+    uses: ./.github/workflows/terraform.yml
+    with:
+      command: apply
+    secrets:
+      GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT }}
+      GCLOUD_PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
+      DISCORD_API_KEY: ${{ secrets.DISCORD_API_KEY }}
+      DISCORD_PUBLIC_KEY: ${{ secrets.DISCORD_PUBLIC_KEY }}
+      DISCORD_APPLICATION_ID: ${{ secrets.DISCORD_APPLICATION_ID }}
