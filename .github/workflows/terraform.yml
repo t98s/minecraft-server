@@ -62,9 +62,9 @@ jobs:
           fi
           if [ "${{ inputs.tfcmt }}" == "true" ]; then
             github-comment hide
-            tfcmt ${{ inputs.command }} -- terraform ${{ inputs.command }} -input=false $args
+            tfcmt ${{ inputs.command }} -- terraform -chdir=terraform ${{ inputs.command }} -input=false $args
           else
-            terraform ${{ inputs.command }} -input=false $args
+            terraform -chdir=terraform ${{ inputs.command }} -input=false $args
           fi
         env:
           GITHUB_TOKEN: ${{ github.token }}
