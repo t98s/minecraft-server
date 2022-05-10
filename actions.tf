@@ -83,11 +83,11 @@ resource "google_project_iam_member" "github-actions-plan" {
 resource "google_storage_bucket_iam_member" "github-actions-plan" {
   bucket = "${local.project}-terraform"
   role   = "roles/storage.objectAdmin"
-  member = google_service_account.github-actions-plan.email
+  member = "serviceAccount:${google_service_account.github-actions-plan.email}"
 }
 
 resource "google_storage_bucket_iam_member" "github-actions-apply" {
   bucket = "${local.project}-terraform"
   role   = "roles/storage.objectAdmin"
-  member = google_service_account.github-actions-apply.email
+  member = "serviceAccount:${google_service_account.github-actions-apply.email}"
 }
