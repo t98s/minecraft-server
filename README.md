@@ -1,6 +1,6 @@
 # minecraft-server
 
-GCP で運用している Minecraft Server を  に terraform で管理するためのものです。
+GCP で運用している Minecraft Server を terraform で管理するためのものです。
 この Minecraft Server は [takanakahiko-and-98others Discord Server](https://scrapbox.io/takanakahiko-and-98other/takanakahiko-and-98other) で利用されています。
 
 ## Features
