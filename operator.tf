@@ -17,3 +17,9 @@ resource "google_project_iam_member" "starter_instanceStandardUser" {
   role     = each.key
   member   = "group:${local.minecraft_starter_gqp}"
 }
+
+resource "google_service_account_iam_member" "starter_instanceStandardUser" {
+  service_account_id = google_service_account.minecraft.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "group:${local.minecraft_starter_gqp}"
+}
