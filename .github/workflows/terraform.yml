@@ -5,8 +5,10 @@ on:
         required: true
         type: string
       ref:
+        required: false
         type: string
       tfcmt:
+        required: false
         type: boolean
     secrets:
       GCLOUD_PROJECT:
