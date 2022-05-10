@@ -15,7 +15,7 @@ resource "google_storage_bucket" "t98s-gcf-src" {
 resource "google_storage_bucket_object" "gcf-minecraft-starter_zip" {
   name   = basename(var.gcf_minecraft_starter_zip_filepath)
   bucket = google_storage_bucket.t98s-gcf-src.name
-  source = var.gcf_minecraft_starter_zip_filepath
+  source = "${path.root}/../${var.gcf_minecraft_starter_zip_filepath}"
 }
 
 resource "google_pubsub_topic" "gcf-minecraft-starter" {
